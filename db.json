@@ -1,1 +1,36 @@
-{todos:[{ id:1, title: Learn json server,Description:Understand API methods, Category:projectmanager, dueDate:2025-12-24, completed: false}]}
+{
+  "todos": [
+    {
+      "id": "c73c",
+      "title": "project manager app",
+      "Description": "a project aimed to simplify different tasks of an organization, individual based on category, Due date",
+      "Category": "Education",
+      "dueDate": "2025-12-26",
+      "completed": false
+    },
+    {
+      "id": "8729",
+      "title": "FSE 2025 project",
+      "Description": "A digital health recording system that uses a QR-based emergency information delivery system.",
+      "Category": "Education",
+      "dueDate": "2026-01-10",
+      "completed": false
+    },
+    {
+      "id": "adcc",
+      "title": "gymWebsite",
+      "Description": "a website in Addis Ababa Which is owned by an individual  with brand name Queen Marta Fitness Global",
+      "Category": "Work",
+      "dueDate": "2026-01-03",
+      "completed": false
+    },
+    {
+      "id": "574c",
+      "title": "Computer architecture and Organization",
+      "Description": "I must study for my final exam",
+      "Category": "Personal",
+      "dueDate": "2025-12-24",
+      "completed": false
+    }
+  ]
+}
