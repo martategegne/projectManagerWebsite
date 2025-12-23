@@ -3,24 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-     <meta name="author" content="Marta Tegegne Mamo">
-     <!-- project description to enhance SEO -->
-     <meta name="description" content="Designed to help you handle your mutliple tasks">
-    <title>project Manager</title>
-    <!-- the external styling sheet link goes here -->
+    <meta name="author" content="Marta Tegegne Mamo">
+    <!-- project description to enhance SEO -->
+    <meta name="description" content="Designed to help you handle your multiple tasks">
+    <title>Project Manager</title>
+    <!-- css external link attached here -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
+        <!-- header -->
         <h1>Task Manager</h1>
-        
+        <!-- form  -->
         <form id="todo-form">
+            <input type="hidden" id="task-id">
             <input type="text" id="title" placeholder="Task Title" required>
             <textarea id="description" placeholder="Description"></textarea>
             <div class="form-row">
-              <!--  -->
-              <label for="category"> Choose a category</label>
-                <select id="category" >
+                <label for="category">Category:</label>
+                <select id="category">
                     <option value="Work">Work</option>
                     <option value="Personal">Personal</option>
                     <option value="Education">Education</option>
@@ -28,22 +29,26 @@
                 <label for="dueDate">Due Date:</label>
                 <input type="date" id="dueDate" required>
             </div>
-            <!-- submit button -->
-            <button type="submit">Add Task</button>
+            <button type="submit" id="submit-btn">Add Task</button>
         </form>
 
         <hr>
-<!-- important buttons go here  -->
+<!-- my app filters  -->
         <div class="filters">
             <button onclick="fetchTasks()">All</button>
             <button onclick="fetchTasks('Work')">Work</button>
             <button onclick="fetchTasks('Personal')">Personal</button>
             <button onclick="fetchTasks('Education')">Education</button>
         </div>
-<!--  -->
-        <div id="task-list"></div>
+<!-- a place holder for the add or updated task in UI  -->
+        <div id="task-list">
+            </div>
+            <!-- darkmode contianer -->
+            <div class="theme-switch">
+    <button id="theme-toggle" >🌙 Toggle Dark Mode</button>
+</div>
     </div>
-    <!-- the project js file link goes here -->
+    <!-- the external js attached here -->
     <script src="script.js"></script>
 </body>
 </html>
