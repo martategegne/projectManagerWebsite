@@ -1,4 +1,4 @@
-const API_URL = 'api/todos';
+const API_URL = '/api/todos';
 const todoForm = document.getElementById('todo-form');
 const taskList = document.getElementById('task-list');
 

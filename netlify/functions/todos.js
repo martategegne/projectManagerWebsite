@@ -1,37 +1,20 @@
-let todos = [
-  {
-    id: "8729",
-    title: "FSE 2025 project",
-    Description: "A digital health recording system that uses a QR-based emergency information delivery system.",
-    Category: "Education",
-    dueDate: "2026-01-10",
-    completed: false
-  },
-  {
-    id: "adcc",
-    title: "gymWebsite",
-    Description: "a website in Addis Ababa Which is owned by an individual with brand name Queen Marta Fitness Global",
-    Category: "Work",
-    dueDate: "2026-01-03",
-    completed: false
-  }
-];
+let todos = [];
 
-export async function handler(event) {
+exports.handler = async (event) => {
   const { httpMethod, path, body } = event;
   const id = path.split("/").pop();
 
   // GET
   if (httpMethod === "GET") {
-    return response(200, todos);
+    return json(200, todos);
   }
 
   // POST
   if (httpMethod === "POST") {
     const newTodo = JSON.parse(body);
-    newTodo.id = crypto.randomUUID();
+    newTodo.id = Date.now().toString();
     todos.push(newTodo);
-    return response(201, newTodo);
+    return json(201, newTodo);
   }
 
   // PATCH
@@ -40,19 +23,19 @@ export async function handler(event) {
     todos = todos.map(todo =>
       todo.id === id ? { ...todo, ...updates } : todo
     );
-    return response(200, { success: true });
+    return json(200, { success: true });
   }
 
   // DELETE
   if (httpMethod === "DELETE") {
     todos = todos.filter(todo => todo.id !== id);
-    return response(200, { success: true });
+    return json(200, { success: true });
   }
 
-  return response(405, { error: "Method not allowed" });
-}
+  return json(405, { error: "Method not allowed" });
+};
 
-function response(statusCode, data) {
+function json(statusCode, data) {
   return {
     statusCode,
     headers: {
