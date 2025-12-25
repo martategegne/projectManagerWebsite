@@ -36,32 +36,64 @@ function renderTasks(tasks) {
     });
 }
 
-//  Add or Update Task (POST/PATCH)
+
+// Add or Update Task (POST/PATCH)
 todoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    //  Confirmation
+    const isUpdating = !!document.getElementById('task-id').value;
+    const confirmMessage = isUpdating 
+        ? "Are you sure you want to update this task?" 
+        : "Are you sure you want to add this task?";
+
+    if (!confirm(confirmMessage)) {
+        return; // Exit if the user clicks 'Cancel'
+    }
+
     const id = document.getElementById('task-id').value;
     const taskData = {
-    title: document.getElementById('title').value,
-    Description: document.getElementById('description').value,
-    Category: document.getElementById('category').value,       
-    dueDate: document.getElementById('dueDate').value
-};
+        title: document.getElementById('title').value,
+        Description: document.getElementById('description').value,
+        Category: document.getElementById('category').value,       
+        dueDate: document.getElementById('dueDate').value
+    };
 
-    if (id) {
-        // Update existing
-        await fetch(`${API_URL}/${id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(taskData)
-        });
-    } else {
-        // Create new
-        await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...taskData, completed: false })
-        });
+    try {
+        let response;
+        if (id) {
+            // Update existing
+            response = await fetch(`${API_URL}/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            });
+        } else {
+            // Create new
+            response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...taskData, completed: false })
+            });
+        }
+
+        // Check if the server response is okay
+        if (!response.ok) {
+            throw new Error('Server error');
+        }
+
+        // Success: Reset form and refresh list
+        todoForm.reset();
+        document.getElementById('task-id').value = '';
+        document.getElementById('submit-btn').innerText = 'Add Task';
+        fetchTasks();
+
+    } catch (error) {
+        // Error handling: Alert user if JSON/Server is not working
+        console.error("Fetch Error:", error);
+        alert("Action failed. Please make sure your JSON server is working and try again.");
     }
+});
 
     todoForm.reset();
     document.getElementById('task-id').value = '';
