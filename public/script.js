@@ -61,11 +61,11 @@ todoForm.addEventListener('submit', async (e) => {
     try {
         let response;
         if (id) {
-            // UPDATING: Send PATCH to /api/todos/ID
-            response = await fetch(`${API_URL}/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(taskData)
+            // This creates the path: /api/todos/8729
+    response = await fetch(`${API_URL}/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskData)
             });
         } else {
             // ADDING: Send POST to /api/todos
