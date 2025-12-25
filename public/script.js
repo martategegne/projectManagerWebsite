@@ -41,17 +41,17 @@ function renderTasks(tasks) {
 todoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    //  Confirmation
-    const isUpdating = !!document.getElementById('task-id').value;
+    // 1. Ask for confirmation first
+    const id = document.getElementById('task-id').value;
+    const isUpdating = !!id;
     const confirmMessage = isUpdating 
         ? "Are you sure you want to update this task?" 
         : "Are you sure you want to add this task?";
 
     if (!confirm(confirmMessage)) {
-        return; // Exit if the user clicks 'Cancel'
+        return; 
     }
 
-    const id = document.getElementById('task-id').value;
     const taskData = {
         title: document.getElementById('title').value,
         Description: document.getElementById('description').value,
@@ -77,23 +77,23 @@ todoForm.addEventListener('submit', async (e) => {
             });
         }
 
-        // Check if the server response is okay
+        // 2. Check if the server actually accepted the data
         if (!response.ok) {
-            throw new Error('Server error');
+            throw new Error('Server connectivity issue');
         }
 
-        // Success: Reset form and refresh list
+        // Success: Reset UI
         todoForm.reset();
         document.getElementById('task-id').value = '';
         document.getElementById('submit-btn').innerText = 'Add Task';
-        fetchTasks();
+        fetchTasks(); // Refresh the list
 
     } catch (error) {
-        // Error handling: Alert user if JSON/Server is not working
-        console.error("Fetch Error:", error);
-        alert("Action failed. Please make sure your JSON server is working and try again.");
+        // 3. Error message if JSON server is down
+        console.error("Save Error:", error);
+        alert("Make sure your JSON server is working! (Check if it is running in your terminal)");
     }
-});
+}); 
 
     todoForm.reset();
     document.getElementById('task-id').value = '';
