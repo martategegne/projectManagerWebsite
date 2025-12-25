@@ -1,6 +1,7 @@
 const API_URL = '/api/todos';
 const todoForm = document.getElementById('todo-form');
 const taskList = document.getElementById('task-list');
+const originalFormContainer = document.querySelector('.form-container') || document.querySelector('header');
 
 // Load Tasks (GET)
 async function fetchTasks(category = '') {
@@ -24,6 +25,8 @@ function renderTasks(tasks) {
     tasks.forEach(task => {
         const div = document.createElement('div');
         div.className = `task-card ${task.completed ? 'completed' : ''}`;
+        // Fix: Use template literals and escape properly for Description
+        const description = task.Description ? task.Description.replace(/'/g, "\\'").replace(/"/g, '&quot;') : '';
         div.innerHTML = `
             <h3>${task.title}</h3>
             <p>${task.Description || 'No description provided'}</p> 
@@ -32,7 +35,7 @@ function renderTasks(tasks) {
                 <button onclick="toggleComplete('${task.id}', ${task.completed})">
                     ${task.completed ? 'Undo' : 'Complete'}
                 </button>
-                <button class="btn-edit" onclick="editTaskSetup('${task.id}', '${task.title}', '${task.Description.replace(/'/g, "\\'")}', '${task.Category}', '${task.dueDate}')">Edit</button>
+                <button class="btn-edit" onclick="editTaskSetup('${task.id}', '${task.title.replace(/'/g, "\\'")}', '${description}', '${task.Category || ''}', '${task.dueDate}')">Edit</button>
                 <button class="btn-del" onclick="deleteTask('${task.id}')">Delete</button>
             </div>
         `;
@@ -83,6 +86,10 @@ todoForm.addEventListener('submit', async (e) => {
         todoForm.reset();
         document.getElementById('task-id').value = '';
         document.getElementById('submit-btn').innerText = 'Add Task';
+        
+        // Close modal if it's open
+        closeModal();
+        
         fetchTasks();
 
     } catch (error) {
@@ -110,39 +117,74 @@ async function toggleComplete(id, isCompleted) {
     fetchTasks();
 }
 
-// Setup Edit Mode
+// Setup Edit Mode - FIXED VERSION
 function editTaskSetup(id, title, desc, cat, date) {
     const modal = document.getElementById('editModal');
-    const form = document.getElementById('todo-form');
-    const container = document.getElementById('modal-form-container');
     
-    modal.style.display = 'block'; // Show modal
-    container.appendChild(form);   // Move form into modal
-
+    // Show modal
+    modal.style.display = 'block';
+    
+    // Move form to modal if it's not already there
+    const formContainer = document.getElementById('modal-form-container');
+    if (todoForm.parentNode !== formContainer) {
+        formContainer.appendChild(todoForm);
+    }
+    
+    // Populate form fields
     document.getElementById('task-id').value = id;
     document.getElementById('title').value = title;
-    document.getElementById('description').value = desc;
-    document.getElementById('category').value = cat;
+    document.getElementById('description').value = decodeHtmlEntities(desc);
+    document.getElementById('category').value = cat || 'General';
     document.getElementById('dueDate').value = date;
     document.getElementById('submit-btn').innerText = 'Update Task';
 }
 
+// Helper function to decode HTML entities
+function decodeHtmlEntities(text) {
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+}
+
+// Close Modal - FIXED VERSION
 function closeModal() {
     const modal = document.getElementById('editModal');
-    const form = document.getElementById('todo-form');
-    // Change '.form-section' to the class/ID of where your form usually sits
-    const originalContainer = document.querySelector('.form-container') || document.querySelector('header');
-
-    modal.style.display = 'none'; // Hide modal
+    modal.style.display = 'none';
     
-    if(originalContainer) {
-        originalContainer.appendChild(form); // Move form back
+    // Move form back to original container if needed
+    if (originalFormContainer && todoForm.parentNode !== originalFormContainer) {
+        originalFormContainer.appendChild(todoForm);
     }
     
-    todoForm.reset();
-    document.getElementById('task-id').value = '';
-    document.getElementById('submit-btn').innerText = 'Add Task';
+    // Reset form only if we're not in the middle of editing
+    if (!document.getElementById('task-id').value) {
+        todoForm.reset();
+        document.getElementById('submit-btn').innerText = 'Add Task';
+    }
 }
+
+// Add click event to close modal when clicking outside
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('editModal');
+    
+    // Close modal when clicking outside of it
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+    
+    // Add cancel button functionality if you have one
+    const cancelBtn = document.getElementById('cancel-edit-btn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function() {
+            todoForm.reset();
+            document.getElementById('task-id').value = '';
+            document.getElementById('submit-btn').innerText = 'Add Task';
+            closeModal();
+        });
+    }
+});
 
 // Dark Theme
 const themeToggle = document.getElementById('theme-toggle');
