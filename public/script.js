@@ -112,18 +112,18 @@ function editTaskSetup(id, title, desc, cat, date) {
     const form = document.getElementById('todo-form');
     const container = document.getElementById('modal-form-container');
     
-    modal.style.display = 'block'; 
-    container.appendChild(form); // Move form into modal
+    modal.style.display = 'block';
+    container.appendChild(form);
 
-    // FILLING THE DATA (Very important)
-    document.getElementById('task-id').value = id; 
+    // Fill the inputs
+    document.getElementById('task-id').value = id; // This stores "8729" or "adcc"
     document.getElementById('title').value = title;
     document.getElementById('description').value = desc;
     document.getElementById('category').value = cat;
     document.getElementById('dueDate').value = date;
+    
     document.getElementById('submit-btn').innerText = 'Update Task';
 }
-
 function closeModal() {
     const modal = document.getElementById('editModal');
     const form = document.getElementById('todo-form');
