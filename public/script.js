@@ -2,16 +2,20 @@ const API_URL = '/api/todos';
 const todoForm = document.getElementById('todo-form');
 const taskList = document.getElementById('task-list');
 
-// Load Tasks (GET) - Supports Filtering  (All work personal education)
+// Load Tasks (GET)
 async function fetchTasks(category = '') {
-    let url = API_URL;
-    if (category) {
-        url += `?Category=${category}`; 
+    try {
+        let url = API_URL;
+        if (category) {
+            url += `?Category=${category}`; 
+        }
+        const res = await fetch(url);
+        if (!res.ok) throw new Error();
+        const tasks = await res.json();
+        renderTasks(tasks);
+    } catch (err) {
+        console.error("Could not fetch tasks. Is the JSON server running?");
     }
-    
-    const res = await fetch(url);
-    const tasks = await res.json();
-    renderTasks(tasks);
 }
 
 // Render Tasks to UI
@@ -28,7 +32,7 @@ function renderTasks(tasks) {
                 <button onclick="toggleComplete('${task.id}', ${task.completed})">
                     ${task.completed ? 'Undo' : 'Complete'}
                 </button>
-                <button class="btn-edit" onclick="editTaskSetup('${task.id}', '${task.title}', '${task.Description}', '${task.Category}', '${task.dueDate}')">Edit</button>
+                <button class="btn-edit" onclick="editTaskSetup('${task.id}', '${task.title}', '${task.Description.replace(/'/g, "\\'")}', '${task.Category}', '${task.dueDate}')">Edit</button>
                 <button class="btn-del" onclick="deleteTask('${task.id}')">Delete</button>
             </div>
         `;
@@ -36,21 +40,19 @@ function renderTasks(tasks) {
     });
 }
 
-
 // Add or Update Task (POST/PATCH)
 todoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // 1. Ask for confirmation first
     const id = document.getElementById('task-id').value;
     const isUpdating = !!id;
+    
+    // 1. Confirmation Popup
     const confirmMessage = isUpdating 
         ? "Are you sure you want to update this task?" 
         : "Are you sure you want to add this task?";
 
-    if (!confirm(confirmMessage)) {
-        return; 
-    }
+    if (!confirm(confirmMessage)) return;
 
     const taskData = {
         title: document.getElementById('title').value,
@@ -62,14 +64,12 @@ todoForm.addEventListener('submit', async (e) => {
     try {
         let response;
         if (id) {
-            // Update existing
             response = await fetch(`${API_URL}/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(taskData)
             });
         } else {
-            // Create new
             response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -77,31 +77,22 @@ todoForm.addEventListener('submit', async (e) => {
             });
         }
 
-        // 2. Check if the server actually accepted the data
-        if (!response.ok) {
-            throw new Error('Server connectivity issue');
-        }
+        if (!response.ok) throw new Error('Network response was not ok');
 
         // Success: Reset UI
         todoForm.reset();
         document.getElementById('task-id').value = '';
         document.getElementById('submit-btn').innerText = 'Add Task';
-        fetchTasks(); // Refresh the list
+        fetchTasks();
 
     } catch (error) {
-        // 3. Error message if JSON server is down
-        console.error("Save Error:", error);
-        alert("Make sure your JSON server is working! (Check if it is running in your terminal)");
+        // 2. Error Popup
+        alert("Action failed. Make sure your JSON server is working!");
+        console.error("Error details:", error);
     }
-}); 
-
-    todoForm.reset();
-    document.getElementById('task-id').value = '';
-    document.getElementById('submit-btn').innerText = 'Add Task';
-    fetchTasks();
 });
 
-//  Delete Task (DELETE)
+// Delete Task
 async function deleteTask(id) {
     if (confirm('Delete this task?')) {
         await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
@@ -109,7 +100,7 @@ async function deleteTask(id) {
     }
 }
 
-//  Mark Completed (PATCH)
+// Toggle Complete
 async function toggleComplete(id, isCompleted) {
     await fetch(`${API_URL}/${id}`, {
         method: 'PATCH',
@@ -129,19 +120,16 @@ function editTaskSetup(id, title, desc, cat, date) {
     document.getElementById('submit-btn').innerText = 'Update Task';
     window.scrollTo(0, 0);
 }
-// toggle dark theme
-const themeToggle = document.getElementById('theme-toggle');
 
-themeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    
-    if (currentTheme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'light');
-        themeToggle.innerText = '🌙 Toggle Dark Mode';
-    } else {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        themeToggle.innerText = '☀️ Toggle Light Mode';
-    }
-});
-// Initial Load
+// Dark Theme
+const themeToggle = document.getElementById('theme-toggle');
+if(themeToggle) {
+    themeToggle.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        themeToggle.innerText = newTheme === 'dark' ? '☀️ Toggle Light Mode' : '🌙 Toggle Dark Mode';
+    });
+}
+
 fetchTasks();
