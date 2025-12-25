@@ -46,13 +46,10 @@ todoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const id = document.getElementById('task-id').value;
-    const isUpdating = !!id;
+    const isUpdating = !!id; // True if an ID exists
     
-    const confirmMessage = isUpdating 
-        ? "Are you sure you want to update this task?" 
-        : "Are you sure you want to add this task?";
-
-    if (!confirm(confirmMessage)) return;
+    // Confirmation
+    if (!confirm(isUpdating ? "Update this task?" : "Add this task?")) return;
 
     const taskData = {
         title: document.getElementById('title').value,
@@ -64,12 +61,14 @@ todoForm.addEventListener('submit', async (e) => {
     try {
         let response;
         if (id) {
+            // UPDATING: Send PATCH to /api/todos/ID
             response = await fetch(`${API_URL}/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(taskData)
             });
         } else {
+            // ADDING: Send POST to /api/todos
             response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -77,19 +76,15 @@ todoForm.addEventListener('submit', async (e) => {
             });
         }
 
-        if (!response.ok) throw new Error('Network response was not ok');
+        if (!response.ok) throw new Error('Server error');
 
-        // Success: Refresh list and handle modal cleanup
+        // SUCCESS: Refresh list and clean up modal
         fetchTasks();
-        if (isUpdating) {
-            closeModal(); // Moves form back and hides popup
-        } else {
-            todoForm.reset();
-        }
+        closeModal(); 
 
     } catch (error) {
-        alert("Action failed. Make sure your JSON server is working!");
-        console.error("Error details:", error);
+        alert("Action failed. Check if your JSON server is running!");
+        console.error(error);
     }
 });
 
@@ -118,9 +113,10 @@ function editTaskSetup(id, title, desc, cat, date) {
     const container = document.getElementById('modal-form-container');
     
     modal.style.display = 'block'; 
-    container.appendChild(form);   
+    container.appendChild(form); // Move form into modal
 
-    document.getElementById('task-id').value = id;
+    // FILLING THE DATA (Very important)
+    document.getElementById('task-id').value = id; 
     document.getElementById('title').value = title;
     document.getElementById('description').value = desc;
     document.getElementById('category').value = cat;
