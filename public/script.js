@@ -7,7 +7,7 @@ async function fetchTasks(category = '') {
     try {
         let url = API_URL;
         if (category) {
-            url += ?Category=${category}; 
+            url += `?Category=${category}`; 
         }
         const res = await fetch(url);
         if (!res.ok) throw new Error();
@@ -23,11 +23,12 @@ function renderTasks(tasks) {
     taskList.innerHTML = '';
     tasks.forEach(task => {
         const div = document.createElement('div');
-        div.className = task-card ${task.completed ? 'completed' : ''};
+        // FIXED: Added backticks
+        div.className = `task-card ${task.completed ? 'completed' : ''}`;
         div.innerHTML = `
             <h3>${task.title}</h3>
-            <p>${task.Description  'No description provided'}</p> 
-            <small>Category: ${task.Category  'General'} | Due: ${task.dueDate}</small>
+            <p>${task.Description || 'No description provided'}</p> 
+            <small>Category: ${task.Category || 'General'} | Due: ${task.dueDate}</small>
             <div class="actions">
                 <button onclick="toggleComplete('${task.id}', ${task.completed})">
                     ${task.completed ? 'Undo' : 'Complete'}
@@ -47,7 +48,6 @@ todoForm.addEventListener('submit', async (e) => {
     const id = document.getElementById('task-id').value;
     const isUpdating = !!id;
     
-    // 1. Confirmation Popup
     const confirmMessage = isUpdating 
         ? "Are you sure you want to update this task?" 
         : "Are you sure you want to add this task?";
@@ -79,14 +79,15 @@ todoForm.addEventListener('submit', async (e) => {
 
         if (!response.ok) throw new Error('Network response was not ok');
 
-        // Success: Reset UI
-        todoForm.reset();
-        document.getElementById('task-id').value = '';
-        document.getElementById('submit-btn').innerText = 'Add Task';
+        // Success: Refresh list and handle modal cleanup
         fetchTasks();
+        if (isUpdating) {
+            closeModal(); // Moves form back and hides popup
+        } else {
+            todoForm.reset();
+        }
 
     } catch (error) {
-        // 2. Error Popup
         alert("Action failed. Make sure your JSON server is working!");
         console.error("Error details:", error);
     }
@@ -116,9 +117,10 @@ function editTaskSetup(id, title, desc, cat, date) {
     const form = document.getElementById('todo-form');
     const container = document.getElementById('modal-form-container');
     
-    modal.style.display = 'block'; // Show modal
-    container.appendChild(form);   // Move form into modal
-document.getElementById('task-id').value = id;
+    modal.style.display = 'block'; 
+    container.appendChild(form);   
+
+    document.getElementById('task-id').value = id;
     document.getElementById('title').value = title;
     document.getElementById('description').value = desc;
     document.getElementById('category').value = cat;
@@ -129,13 +131,14 @@ document.getElementById('task-id').value = id;
 function closeModal() {
     const modal = document.getElementById('editModal');
     const form = document.getElementById('todo-form');
-    // Change '.form-section' to the class/ID of where your form usually sits
-    const originalContainer = document.querySelector('.form-container') || document.querySelector('header');
+    // Ensure this selector matches where your form originally sits in HTML
+    const originalContainer = document.querySelector('.container') || document.querySelector('header');
 
-    modal.style.display = 'none'; // Hide modal
+    modal.style.display = 'none'; 
     
     if(originalContainer) {
-        originalContainer.appendChild(form); // Move form back
+        // Puts form back at the top of its original home
+        originalContainer.insertBefore(form, originalContainer.firstChild); 
     }
     
     todoForm.reset();
