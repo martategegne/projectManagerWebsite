@@ -112,13 +112,36 @@ async function toggleComplete(id, isCompleted) {
 
 // Setup Edit Mode
 function editTaskSetup(id, title, desc, cat, date) {
+    const modal = document.getElementById('editModal');
+    const form = document.getElementById('todo-form');
+    const container = document.getElementById('modal-form-container');
+    
+    modal.style.display = 'block'; // Show modal
+    container.appendChild(form);   // Move form into modal
+
     document.getElementById('task-id').value = id;
     document.getElementById('title').value = title;
     document.getElementById('description').value = desc;
     document.getElementById('category').value = cat;
     document.getElementById('dueDate').value = date;
     document.getElementById('submit-btn').innerText = 'Update Task';
-    window.scrollTo(0, 0);
+}
+
+function closeModal() {
+    const modal = document.getElementById('editModal');
+    const form = document.getElementById('todo-form');
+    // Change '.form-section' to the class/ID of where your form usually sits
+    const originalContainer = document.querySelector('.form-container') || document.querySelector('header');
+
+    modal.style.display = 'none'; // Hide modal
+    
+    if(originalContainer) {
+        originalContainer.appendChild(form); // Move form back
+    }
+    
+    todoForm.reset();
+    document.getElementById('task-id').value = '';
+    document.getElementById('submit-btn').innerText = 'Add Task';
 }
 
 // Dark Theme
