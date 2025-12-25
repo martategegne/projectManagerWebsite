@@ -6,6 +6,7 @@ const taskList = document.getElementById('task-list');
 async function fetchTasks(category = '') {
     try {
         let url = API_URL;
+        // Use "Category" with a capital 'C' to match your db.json keys
         if (category) {
             url += `?Category=${category}`; 
         }
