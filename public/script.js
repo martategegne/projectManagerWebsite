@@ -7,16 +7,23 @@ const searchInput = document.getElementById('search-input');
 
 let allTasks = [];
 
-async function fetchTasks(category = '') {
-    let url = API_URL;
-
-    if (category) {
-        url += `?category=${category}`;
-    }
-
-    const res = await fetch(url);
+async function fetchTasks() {
+    const res = await fetch(API_URL);
     allTasks = await res.json();
     renderTasks(allTasks);
+}
+
+function filterByCategory(category) {
+    if (!category) {
+        renderTasks(allTasks);
+        return;
+    }
+
+    const filtered = allTasks.filter(
+        task => task.category === category
+    );
+
+    renderTasks(filtered);
 }
 
 function renderTasks(tasks) {
