@@ -4,16 +4,17 @@ const todoForm = document.getElementById('todo-form');
 const editForm = document.getElementById('edit-todo-form');
 const taskList = document.getElementById('task-list');
 const searchInput = document.getElementById('search-input');
-
+// Gets the search bar input
 let allTasks = [];
-
+// Stores all tasks fetched from the server
 async function fetchTasks() {
-    const res = await fetch(API_URL);
-    allTasks = await res.json();
-    renderTasks(allTasks);
+    // Defines an asynchronous function to load tasks from the backend
+    const res = await fetch(API_URL);   //Sends a GET request to /api/todos
+    allTasks = await res.json();     //Converts the response to JavaScript objects and saves them in allTasks
+    renderTasks(allTasks);     //Displays all tasks on the screen.
 }
 
-function filterByCategory(category) {
+function filterByCategory(category) {          //Called when a category button is clicked
     if (!category) {
         renderTasks(allTasks);
         return;
