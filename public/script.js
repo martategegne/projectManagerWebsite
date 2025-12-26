@@ -1,5 +1,5 @@
 const API_URL = '/api/todos';
-
+// Stores the backend endpoint where all tasks are saved and retrieved
 const todoForm = document.getElementById('todo-form');
 const editForm = document.getElementById('edit-todo-form');
 const taskList = document.getElementById('task-list');
