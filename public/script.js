@@ -148,5 +148,5 @@ if(themeToggle) {
 }
 
 // Load tasks on startup
-window.fetchTasks = fetchTasks;
+
 fetchTasks();
