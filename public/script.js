@@ -1,12 +1,13 @@
 const API_URL = '/api/todos';
 const todoForm = document.getElementById('todo-form');
+const editForm = document.getElementById('edit-todo-form');
 const taskList = document.getElementById('task-list');
 
-// Load Tasks (GET)
+// 1. Load Tasks (GET) - Categorization Fix
 async function fetchTasks(category = '') {
     try {
         let url = API_URL;
-        // Use "Category" with a capital 'C' to match your db.json keys
+        // JSON Server uses Case-Sensitive keys: ?Category=Work
         if (category) {
             url += `?Category=${category}`; 
         }
@@ -15,20 +16,19 @@ async function fetchTasks(category = '') {
         const tasks = await res.json();
         renderTasks(tasks);
     } catch (err) {
-        console.error("Could not fetch tasks. Is the JSON server running?");
+        console.error("Fetch error. Check if json-server is running on port 3000.");
     }
 }
 
-// Render Tasks to UI
+// 2. Render Tasks to UI
 function renderTasks(tasks) {
     taskList.innerHTML = '';
     tasks.forEach(task => {
         const div = document.createElement('div');
-        // FIXED: Added backticks
         div.className = `task-card ${task.completed ? 'completed' : ''}`;
         div.innerHTML = `
             <h3>${task.title}</h3>
-            <p>${task.Description || 'No description provided'}</p> 
+            <p>${task.Description || 'No description'}</p> 
             <small>Category: ${task.Category || 'General'} | Due: ${task.dueDate}</small>
             <div class="actions">
                 <button onclick="toggleComplete('${task.id}', ${task.completed})">
@@ -42,62 +42,74 @@ function renderTasks(tasks) {
     });
 }
 
-// Add or Update Task (POST/PATCH)
+// 3. Add Task Listener (Main Form)
 todoForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-
-    const id = document.getElementById('task-id').value;
-    const isUpdating = !!id; // True if an ID exists
     
-    // Confirmation
-    if (!confirm(isUpdating ? "Update this task?" : "Add this task?")) return;
-
+    // Ensure the key is "Category" with a capital C to match your JSON
     const taskData = {
         title: document.getElementById('title').value,
         Description: document.getElementById('description').value,
         Category: document.getElementById('category').value,       
-        dueDate: document.getElementById('dueDate').value
+        dueDate: document.getElementById('dueDate').value,
+        completed: false
     };
 
     try {
-        let response;
-        if (id) {
-            // This creates the path: /api/todos/8729
-    response = await fetch(`${API_URL}/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(taskData)
-            });
-        } else {
-            // ADDING: Send POST to /api/todos
-            response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...taskData, completed: false })
-            });
-        }
-
-        if (!response.ok) throw new Error('Server error');
-
-        // SUCCESS: Refresh list and clean up modal
-        fetchTasks();
-        closeModal(); 
-
-    } catch (error) {
-        alert("Action failed. Check if your JSON server is running!");
-        console.error(error);
+        const res = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskData)
+        });
+        if (!res.ok) throw new Error();
+        
+        todoForm.reset();
+        fetchTasks(); // Refresh list
+    } catch (err) {
+        alert("Could not add task.");
     }
 });
 
-// Delete Task
+// 4. Update Task Listener (Modal Form)
+if (editForm) {
+    editForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-task-id').value;
+        
+        const taskData = {
+            title: document.getElementById('edit-title').value,
+            Description: document.getElementById('edit-description').value,
+            Category: document.getElementById('edit-category').value,       
+            dueDate: document.getElementById('edit-dueDate').value
+        };
+
+        try {
+            // Sends PATCH to /api/todos/ID
+            const res = await fetch(`${API_URL}/${id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            });
+            
+            if (!res.ok) throw new Error();
+            
+            closeModal(); // Hide modal
+            fetchTasks(); // Refresh list
+        } catch (err) {
+            alert("Update failed! check server connection.");
+        }
+    });
+}
+
+// 5. Delete Task
 async function deleteTask(id) {
-    if (confirm('Delete this task?')) {
+    if (confirm('Delete this task permanently?')) {
         await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
         fetchTasks();
     }
 }
 
-// Toggle Complete
+// 6. Toggle Complete
 async function toggleComplete(id, isCompleted) {
     await fetch(`${API_URL}/${id}`, {
         method: 'PATCH',
@@ -107,43 +119,24 @@ async function toggleComplete(id, isCompleted) {
     fetchTasks();
 }
 
-// Setup Edit Mode
+// 7. Modal Controls
 function editTaskSetup(id, title, desc, cat, date) {
     const modal = document.getElementById('editModal');
-    const form = document.getElementById('todo-form');
-    const container = document.getElementById('modal-form-container');
-    
     modal.style.display = 'block';
-    container.appendChild(form);
 
-    // Fill the inputs
-    document.getElementById('task-id').value = id; // This stores "8729" or "adcc"
-    document.getElementById('title').value = title;
-    document.getElementById('description').value = desc;
-    document.getElementById('category').value = cat;
-    document.getElementById('dueDate').value = date;
-    
-    document.getElementById('submit-btn').innerText = 'Update Task';
+    // Map existing data to the modal input fields
+    document.getElementById('edit-task-id').value = id;
+    document.getElementById('edit-title').value = title;
+    document.getElementById('edit-description').value = desc;
+    document.getElementById('edit-category').value = cat;
+    document.getElementById('edit-dueDate').value = date;
 }
+
 function closeModal() {
-    const modal = document.getElementById('editModal');
-    const form = document.getElementById('todo-form');
-    // Ensure this selector matches where your form originally sits in HTML
-    const originalContainer = document.querySelector('.container') || document.querySelector('header');
-
-    modal.style.display = 'none'; 
-    
-    if(originalContainer) {
-        // Puts form back at the top of its original home
-        originalContainer.insertBefore(form, originalContainer.firstChild); 
-    }
-    
-    todoForm.reset();
-    document.getElementById('task-id').value = '';
-    document.getElementById('submit-btn').innerText = 'Add Task';
+    document.getElementById('editModal').style.display = 'none';
 }
 
-// Dark Theme
+// 8. Theme Toggle
 const themeToggle = document.getElementById('theme-toggle');
 if(themeToggle) {
     themeToggle.addEventListener('click', () => {
@@ -154,4 +147,5 @@ if(themeToggle) {
     });
 }
 
+// Load tasks on startup
 fetchTasks();
