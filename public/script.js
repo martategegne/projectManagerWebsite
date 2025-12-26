@@ -4,12 +4,12 @@ const editForm = document.getElementById('edit-todo-form');
 const taskList = document.getElementById('task-list');
 
 // 1. Load Tasks (GET) - Categorization Fix
-async function fetchTasks(category = '') {
+async function fetchTasks(Category = '') {
     try {
         let url = API_URL;
         // JSON Server uses Case-Sensitive keys: ?Category=Work
-        if (category) {
-            url += `?Category=${category}`; 
+        if (Category) {
+            url += `?Category=${Category}`; 
         }
         const res = await fetch(url);
         if (!res.ok) throw new Error();
