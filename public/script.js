@@ -1,143 +1,118 @@
 const API_URL = '/api/todos';
+
 const todoForm = document.getElementById('todo-form');
 const editForm = document.getElementById('edit-todo-form');
 const taskList = document.getElementById('task-list');
+const searchInput = document.getElementById('search-input');
 
-// 1. Load Tasks (GET) - Categorization Fix
+let allTasks = [];
+
 async function fetchTasks(category = '') {
-    try {
-        let url = API_URL;
+    let url = API_URL;
 
-        if (category) {
-            url += `?Category=${category}`;
-        }
-
-        const res = await fetch(url);
-        if (!res.ok) throw new Error();
-
-        allTasks = await res.json();   // store tasks
-        renderTasks(allTasks);
-
-    } catch (err) {
-        console.error("Fetch error. Check if json-server is running.");
+    if (category) {
+        url += `?category=${category}`;
     }
+
+    const res = await fetch(url);
+    allTasks = await res.json();
+    renderTasks(allTasks);
 }
 
-
-// 2. Render Tasks to UI
 function renderTasks(tasks) {
     taskList.innerHTML = '';
+
     tasks.forEach(task => {
         const div = document.createElement('div');
         div.className = `task-card ${task.completed ? 'completed' : ''}`;
+
         div.innerHTML = `
             <h3>${task.title}</h3>
-            <p>${task.Description || 'No description'}</p> 
-            <small>Category: ${task.Category || 'General'} | Due: ${task.dueDate}</small>
+            <p>${task.description || 'No description'}</p>
+            <small>Category: ${task.category} | Due: ${task.dueDate}</small>
             <div class="actions">
                 <button onclick="toggleComplete('${task.id}', ${task.completed})">
                     ${task.completed ? 'Undo' : 'Complete'}
                 </button>
-                <button class="btn-edit" onclick="editTaskSetup('${task.id}', '${task.title}', '${task.Description.replace(/'/g, "\\'")}', '${task.Category}', '${task.dueDate}')">Edit</button>
+                <button class="btn-edit" onclick="editTaskSetup(
+                    '${task.id}',
+                    '${task.title.replace(/'/g, "\\'")}',
+                    '${(task.description || '').replace(/'/g, "\\'")}',
+                    '${task.category}',
+                    '${task.dueDate}'
+                )">Edit</button>
                 <button class="btn-del" onclick="deleteTask('${task.id}')">Delete</button>
             </div>
         `;
+
         taskList.appendChild(div);
     });
 }
 
-// 3. Add Task Listener (Main Form)
-todoForm.addEventListener('submit', async (e) => {
+todoForm.addEventListener('submit', async e => {
     e.preventDefault();
-    
-    // Ensure the key is "Category" with a capital C to match your JSON
+
     const taskData = {
         title: document.getElementById('title').value,
-        Description: document.getElementById('description').value,
-        Category: document.getElementById('category').value,       
+        description: document.getElementById('description').value,
+        category: document.getElementById('category').value,
         dueDate: document.getElementById('dueDate').value,
         completed: false
     };
 
-    try {
-        const res = await fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(taskData)
-        });
-        if (!res.ok) throw new Error();
-        
-        todoForm.reset();
-        fetchTasks(); // Refresh list
-    } catch (err) {
-        alert("Could not add task.");
-    }
+    await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(taskData)
+    });
+
+    todoForm.reset();
+    fetchTasks();
 });
 
-// 4. Update Task Listener (Modal Form)
 if (editForm) {
-    editForm.addEventListener('submit', async (e) => {
+    editForm.addEventListener('submit', async e => {
         e.preventDefault();
+
         const id = document.getElementById('edit-task-id').value;
-        
+
         const taskData = {
             title: document.getElementById('edit-title').value,
-            Description: document.getElementById('edit-description').value,
-            Category: document.getElementById('edit-category').value,       
+            description: document.getElementById('edit-description').value,
+            category: document.getElementById('edit-category').value,
             dueDate: document.getElementById('edit-dueDate').value
         };
 
-        try {
-            // Sends PATCH to /api/todos/ID
-            const res = await fetch(`${API_URL}/${id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(taskData)
-            });
-            
-            if (!res.ok) throw new Error();
-            
-            closeModal(); // Hide modal
-            fetchTasks(); // Refresh list
-        } catch (err) {
-            alert("Update failed! check server connection.");
-        }
-    });
-}
+        await fetch(`${API_URL}/${id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(taskData)
+        });
 
-// 5. Delete Task
-async function deleteTask(id) {
-    if (confirm('Delete this task permanently?')) {
-        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        closeModal();
         fetchTasks();
-    }
-}
-searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase();
-
-    const filteredTasks = allTasks.filter(task =>
-        task.title.toLowerCase().includes(query)
-    );
-
-    renderTasks(filteredTasks);
-});
-
-// 6. Toggle Complete
-async function toggleComplete(id, isCompleted) {
-    await fetch(`${API_URL}/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: !isCompleted })
     });
+}
+
+async function deleteTask(id) {
+    if (!confirm('Delete this task permanently?')) return;
+
+    await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
     fetchTasks();
 }
 
-// 7. Modal Controls
-function editTaskSetup(id, title, desc, cat, date) {
-    const modal = document.getElementById('editModal');
-    modal.style.display = 'block';
+async function toggleComplete(id, completed) {
+    await fetch(`${API_URL}/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ completed: !completed })
+    });
 
-    // Map existing data to the modal input fields
+    fetchTasks();
+}
+
+function editTaskSetup(id, title, desc, cat, date) {
+    document.getElementById('editModal').style.display = 'block';
     document.getElementById('edit-task-id').value = id;
     document.getElementById('edit-title').value = title;
     document.getElementById('edit-description').value = desc;
@@ -149,17 +124,26 @@ function closeModal() {
     document.getElementById('editModal').style.display = 'none';
 }
 
-// 8. Theme Toggle
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase();
+    const filtered = allTasks.filter(task =>
+        task.title.toLowerCase().includes(query)
+    );
+    renderTasks(filtered);
+});
+
 const themeToggle = document.getElementById('theme-toggle');
-if(themeToggle) {
+
+if (themeToggle) {
     themeToggle.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        const theme = document.documentElement.getAttribute('data-theme');
+        const newTheme = theme === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', newTheme);
-        themeToggle.innerText = newTheme === 'dark' ? '☀️ Toggle Light Mode' : '🌙 Toggle Dark Mode';
+        themeToggle.innerText =
+            newTheme === 'dark'
+                ? '☀️ Toggle Light Mode'
+                : '🌙 Toggle Dark Mode';
     });
 }
-
-// Load tasks on startup
 
 fetchTasks();
