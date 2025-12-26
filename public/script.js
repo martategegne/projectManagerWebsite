@@ -7,18 +7,22 @@ const taskList = document.getElementById('task-list');
 async function fetchTasks(category = '') {
     try {
         let url = API_URL;
-        // JSON Server uses Case-Sensitive keys: ?Category=Work
+
         if (category) {
-            url += `?Category=${category}`; 
+            url += `?Category=${category}`;
         }
+
         const res = await fetch(url);
         if (!res.ok) throw new Error();
-        const tasks = await res.json();
-        renderTasks(tasks);
+
+        allTasks = await res.json();   // store tasks
+        renderTasks(allTasks);
+
     } catch (err) {
-        console.error("Fetch error. Check if json-server is running on port 3000.");
+        console.error("Fetch error. Check if json-server is running.");
     }
 }
+
 
 // 2. Render Tasks to UI
 function renderTasks(tasks) {
@@ -108,6 +112,15 @@ async function deleteTask(id) {
         fetchTasks();
     }
 }
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase();
+
+    const filteredTasks = allTasks.filter(task =>
+        task.title.toLowerCase().includes(query)
+    );
+
+    renderTasks(filteredTasks);
+});
 
 // 6. Toggle Complete
 async function toggleComplete(id, isCompleted) {
