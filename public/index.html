@@ -8,7 +8,7 @@
     <meta name="description" content="Designed to help you handle your multiple tasks">
     <title>Project Manager</title>
     <!-- my favicon goes here -->
-   <link rel="icon" type="image/png" href="./ts.png">
+    <link rel="icon" type="image/png" href="./ts.png">
     <!-- css external link attached here -->
     <link rel="stylesheet" href="./style.css">
 </head>
@@ -16,13 +16,17 @@
     <div class="container">
         <!-- header -->
         <h1>Task Manager</h1>
+
         <!-- form  -->
         <form id="todo-form">
             <input type="hidden" id="task-id">
+
             <label for="title">Task Title: </label>
             <input type="text" id="title" placeholder="Task Title" required>
+
             <label for="description">Task description: </label>
             <textarea id="description" placeholder="Description"></textarea>
+
             <div class="form-row">
                 <label for="category">Category:</label>
                 <select id="category">
@@ -30,58 +34,68 @@
                     <option value="Personal">Personal</option>
                     <option value="Education">Education</option>
                 </select>
+
                 <label for="dueDate">Due Date:</label>
                 <input type="date" id="dueDate" required>
             </div>
+
             <button type="submit" id="submit-btn">Add Task</button>
         </form>
 
         <hr>
-        <!-- search bar -->
-<div class="search-bar">
-    <input 
-        type="text" 
-        id="search-input" 
-        placeholder="Search tasks by title..."
-    >
-</div>
 
-<!-- my app filters  -->
-       <div class="filters">
-    <button onclick="fetchTasks('')">All</button> 
-    <button onclick="fetchTasks('Work')">Work</button>
-    <button onclick="fetchTasks('Personal')">Personal</button>
-    <button onclick="fetchTasks('Education')">Education</button>
-</div>
-<!-- a place holder for the add or updated task in UI  -->
-        <div id="task-list">
-            </div>
-            <!-- darkmode contianer -->
-            <div class="theme-switch">
-                
-    <button id="theme-toggle" >🌙 Toggle Dark Mode</button>
-</div>
+        <!-- search bar -->
+        <div class="search-bar">
+            <input 
+                type="text" 
+                id="search-input" 
+                placeholder="Search tasks by title..."
+            >
+        </div>
+
+        <!-- my app filters  -->
+        <div class="filters">
+            <button onclick="fetchTasks('')">All</button> 
+            <button onclick="fetchTasks('Work')">Work</button>
+            <button onclick="fetchTasks('Personal')">Personal</button>
+            <button onclick="fetchTasks('Education')">Education</button>
+        </div>
+
+        <!-- a place holder for the add or updated task in UI  -->
+        <div id="task-list"></div>
+
+        <!-- darkmode contianer -->
+        <div class="theme-switch">
+            <button id="theme-toggle">🌙 Toggle Dark Mode</button>
+        </div>
     </div>
+
     <!-- the edit button  -->
     <div id="editModal" class="modal-overlay">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeModal()">&times;</span>
-        <h2>Edit Task</h2>
-        <form id="edit-todo-form">
-            <input type="hidden" id="edit-task-id">
-            <input type="text" id="edit-title" placeholder="Task Title" required>
-            <textarea id="edit-description" placeholder="Description"></textarea>
-            <select id="edit-category">
-                
-                <option value="Work">Work</option>
-                <option value="Personal">Personal</option>
-                <option value="Education">Education</option>
-            </select>
-            <input type="date" id="edit-dueDate">
-            <button type="submit" id="edit-submit-btn">Update Task</button>
-        </form>
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            <h2>Edit Task</h2>
+
+            <form id="edit-todo-form">
+                <input type="hidden" id="edit-task-id">
+
+                <input type="text" id="edit-title" placeholder="Task Title" required>
+
+                <textarea id="edit-description" placeholder="Description"></textarea>
+
+                <select id="edit-category">
+                    <option value="Work">Work</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Education">Education</option>
+                </select>
+
+                <input type="date" id="edit-dueDate">
+
+                <button type="submit" id="edit-submit-btn">Update Task</button>
+            </form>
+        </div>
     </div>
-</div>
+
     <!-- the external js attached here -->
     <script src="./script.js"></script>
 </body>
