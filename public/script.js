@@ -7,34 +7,34 @@ const searchInput = document.getElementById('search-input');
 // Gets the search bar input
 let allTasks = [];
 // Stores all tasks fetched from the server
-async function fetchTasks() {
+async function fetchTasks() {    // Fetches all tasks and enables client-side search and category filtering
     // Defines an asynchronous function to load tasks from the backend
     const res = await fetch(API_URL);   //Sends a GET request to /api/todos
     allTasks = await res.json();     //Converts the response to JavaScript objects and saves them in allTasks
     renderTasks(allTasks);     //Displays all tasks on the screen.
 }
-
+// Filters tasks by selected category on the client side
 function filterByCategory(category) {          //Called when a category button is clicked
-    if (!category) {
+    if (!category) {      //Checks if the user clicked All
         renderTasks(allTasks);
-        return;
+        return;            //Shows all tasks and exits the function
     }
 
     const filtered = allTasks.filter(
         task => task.category === category
-    );
+    );    //Creates a new array containing only tasks that match the selected category
 
-    renderTasks(filtered);
+    renderTasks(filtered);        //Displays only the filtered tasks
 }
+// Renders task cards to the UI
+function renderTasks(tasks) {   //Receives an array of tasks and displays them
+    taskList.innerHTML = '';     //Clears the UI before re-rendering to avoid duplicates
 
-function renderTasks(tasks) {
-    taskList.innerHTML = '';
+    tasks.forEach(task => {     //Loops through every task
+        const div = document.createElement('div');   //Creates a new <div> for a task card
+        div.className = `task-card ${task.completed ? 'completed' : ''}`;  //Adds completed class if the task is done
 
-    tasks.forEach(task => {
-        const div = document.createElement('div');
-        div.className = `task-card ${task.completed ? 'completed' : ''}`;
-
-        div.innerHTML = `
+        div.innerHTML = `  //Inserts task content dynamically
             <h3>${task.title}</h3>
             <p>${task.description || 'No description'}</p>
             <small>Category: ${task.category} | Due: ${task.dueDate}</small>
@@ -53,10 +53,10 @@ function renderTasks(tasks) {
             </div>
         `;
 
-        taskList.appendChild(div);
+        taskList.appendChild(div);   //Adds the task card to the page
     });
 }
-
+// Handles adding a new task
 todoForm.addEventListener('submit', async e => {
     e.preventDefault();
 
@@ -77,7 +77,7 @@ todoForm.addEventListener('submit', async e => {
     todoForm.reset();
     fetchTasks();
 });
-
+// Handles updating an existing task
 if (editForm) {
     editForm.addEventListener('submit', async e => {
         e.preventDefault();
@@ -101,14 +101,14 @@ if (editForm) {
         fetchTasks();
     });
 }
-
+// Deletes a task by ID
 async function deleteTask(id) {
     if (!confirm('Delete this task permanently?')) return;
 
     await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
     fetchTasks();
 }
-
+// Toggles a task's completed status
 async function toggleComplete(id, completed) {
     await fetch(`${API_URL}/${id}`, {
         method: 'PATCH',
@@ -118,7 +118,7 @@ async function toggleComplete(id, completed) {
 
     fetchTasks();
 }
-
+// Opens the edit modal and fills it with task data
 function editTaskSetup(id, title, desc, cat, date) {
     document.getElementById('editModal').style.display = 'block';
     document.getElementById('edit-task-id').value = id;
@@ -127,11 +127,11 @@ function editTaskSetup(id, title, desc, cat, date) {
     document.getElementById('edit-category').value = cat;
     document.getElementById('edit-dueDate').value = date;
 }
-
+// Closes the edit modal
 function closeModal() {
     document.getElementById('editModal').style.display = 'none';
 }
-
+// Filters tasks based on search input
 searchInput.addEventListener('input', () => {
     const query = searchInput.value.toLowerCase();
     const filtered = allTasks.filter(task =>
@@ -139,7 +139,7 @@ searchInput.addEventListener('input', () => {
     );
     renderTasks(filtered);
 });
-
+// Toggles between light and dark mode
 const themeToggle = document.getElementById('theme-toggle');
 
 if (themeToggle) {
@@ -153,5 +153,5 @@ if (themeToggle) {
                 : '🌙 Toggle Dark Mode';
     });
 }
-
+// Loads tasks when the page first loads
 fetchTasks();
